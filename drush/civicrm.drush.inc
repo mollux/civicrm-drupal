@@ -374,22 +374,17 @@ function _civicrm_extract_tarfile($destinationPath, $option = 'tarfile') {
   drush_shell_exec("tar -xf $tarpath -C \"$destinationPath\"");
 }
 
-function _civicrm_install_db($dbuser, $dbpass, $dbhost, $dbname,
-  $modPath, $lang, $loadGeneratedData
-) {
-  $drupalRoot = drush_get_context('DRUSH_DRUPAL_ROOT');
-  $siteRoot = drush_get_context('DRUSH_DRUPAL_SITE_ROOT', FALSE);
-
+function _civicrm_install_db($dbuser, $dbpass, $dbhost, $dbname, $modPath, $lang, $loadGeneratedData) {
   $sqlPath = "$modPath/civicrm/sql";
-  $conn = @mysql_connect($dbhost, $dbuser, $dbpass);
-  if (!@mysql_select_db($dbname) &&
-    !@mysql_query("CREATE DATABASE $database")
+  $conn = mysqli_connect($dbhost, $dbuser, $dbpass);
+  if (!@mysqli_select_db($conn, $dbname) &&
+    !@mysqli_query($conn, "CREATE DATABASE $dbname")
   ) {
     drush_die(dt('CiviCRM database was not found. Failed to create one.'));
   }
 
   // setup database with civicrm structure and data
-  $dsn = "mysql://{$dbuser}:{$dbpass}@{$dbhost}/{$dbname}?new_link=true";
+  $dsn = "mysqli://{$dbuser}:{$dbpass}@{$dbhost}/{$dbname}?new_link=true";
   drush_log(dt("Loading CiviCRM database structure .."));
   civicrm_source($dsn, $sqlPath . '/civicrm.mysql');
   drush_log(dt("Loading CiviCRM database with required data .."));
